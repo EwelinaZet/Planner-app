@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .page {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+        }
+
+        .header p {
+            margin: 0;
+            color: #6b7280;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .error {
+            color: #dc2626;
+            font-size: 13px;
+        }
+
+        .btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .task-description {
+            margin-bottom: 8px;
+            color: #4b5563;
+        }
+
+        .task-meta {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .inline-form {
+            margin: 0;
+        }
+
+        .completed-text {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+
+        .status {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-open {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-done {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .debug {
+            margin-bottom: 16px;
+            padding: 10px 14px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+        }
+
+        .empty {
+            padding: 20px;
+            text-align: center;
+            background: white;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-card {
+                flex-direction: column;
+            }
+
+            .task-actions {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="header">
+        <h1>Lista zadań</h1>
+        <p>Dodawaj i zarządzaj zadaniami.</p>
+    </div>
+
+    <div class="debug">
+        Liczba tasków: <span th:text="${#lists.size(tasks)}">0</span>
+    </div>
+
+    <div class="card">
+        <form th:action="@{/add}" th:object="${task}" method="post">
+            <div class="form-grid">
+                <div class="field">
+                    <label for="title">Nazwa zadania</label>
+                    <input id="title" type="text" th:field="*{title}" placeholder="Np. Przygotować demo">
+                    <div class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                </div>
+
+                <div class="field">
+                    <label for="description">Opis</label>
+                    <input id="description" type="text" th:field="*{description}" placeholder="Krótki opis">
+                </div>
+
+                <div class="field">
+                    <button class="btn btn-primary" type="submit">Dodaj</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="task-list" th:if="${!#lists.isEmpty(tasks)}">
+        <div class="task-card" th:each="taskItem : ${tasks}">
+            <div class="task-info">
+                <div>
+                    <span class="task-title"
+                          th:text="${taskItem.title}"
+                          th:classappend="${taskItem.completed} ? ' completed-text' : ''">
+                        Tytuł
+                    </span>
+
+                    <span class="status status-open" th:if="${!taskItem.completed}">
+                        Do zrobienia
+                    </span>
+
+                    <span class="status status-done" th:if="${taskItem.completed}">
+                        Gotowe
+                    </span>
+                </div>
+
+                <div class="task-description"
+                     th:text="${taskItem.description}"
+                     th:classappend="${taskItem.completed} ? ' completed-text' : ''">
+                    Opis
+                </div>
+
+                <div class="task-meta">
+                    <div>ID: <span th:text="${taskItem.id}">1</span></div>
+                    <div>Dodano: <span th:text="${taskItem.createdAt}">2026-06-16T20:00</span></div>
+                </div>
+            </div>
+
+            <div class="task-actions">
+                <form class="inline-form" th:action="@{/toggle/{id}(id=${taskItem.id})}" method="post">
+                    <button class="btn btn-success" type="submit">Zmień status</button>
+                </form>
+
+                <form class="inline-form" th:action="@{/delete/{id}(id=${taskItem.id})}" method="post">
+                    <button class="btn btn-danger" type="submit">Usuń</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty" th:if="${#lists.isEmpty(tasks)}">
+        Brak zadań.
+    </div>
+</div>
+</body>
+</html>
