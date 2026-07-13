@@ -21,15 +21,6 @@ public class TaskService {
         Task task = new Task();
         task.setTitle(title);
         task.setDescription(description);
-        task.setCompleted(false);
-        taskRepository.save(task);
-    }
-
-    public void toggleCompleted(Long id) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono taska o id: " + id));
-
-        task.setCompleted(!task.isCompleted());
         taskRepository.save(task);
     }
 

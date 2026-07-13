@@ -34,13 +34,9 @@ public class TaskController {
             return "index";
         }
 
-        taskService.add(task.getTitle(), task.getDescription());
-        return "redirect:/";
-    }
+        // popraw obsługę
 
-    @PostMapping("/toggle/{id}")
-    public String toggleTask(@PathVariable Long id) {
-        taskService.toggleCompleted(id);
+        taskService.add(task.getTitle(), task.getDescription());
         return "redirect:/";
     }
 
@@ -50,3 +46,6 @@ public class TaskController {
         return "redirect:/";
     }
 }
+
+
+// lifecycle

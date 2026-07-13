@@ -8,11 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
-public class Task {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Task extends BaseEntity {
 
     @NotBlank(message = "Nazwa zadania nie może być pusta")
     @Column(nullable = false)
@@ -21,30 +17,33 @@ public class Task {
     @Column(length = 1000)
     private String description;
 
-    @Column(nullable = false)
-    private boolean completed;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private TaskStatus status = TaskStatus.TODO;
 
-    @CreationTimestamp
-    @Column(name="created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "due_date")
+    private LocalDateTime dueDate;
 
-    public Task() {
-    }
+    @Column(name = "scheduled_at")
+    private LocalDateTime scheduledAt;
 
-    public Task(Long id, String title, String description, boolean completed) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.completed = completed;
-    }
+    @Column(name = "is_recurring", nullable = false)
+    private boolean recurring = false;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "recurrence_rule", length = 100)
+    private String recurrenceRule;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "household_id", nullable = false)
+    private Household household;
+
+    @ManyToOne(fetch= FetchType.LAZY)
+    @JoinColumn(name = "assigned_user_id")
+    private User assignedUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id")
+    private User createdBy;
 
     public String getTitle() {
         return title;
@@ -62,15 +61,67 @@ public class Task {
         this.description = description;
     }
 
-    public boolean isCompleted() {
-        return completed;
+    public TaskStatus getStatus() {
+        return status;
     }
 
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
+    public void setStatus(TaskStatus status) {
+        this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDateTime dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public LocalDateTime getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(LocalDateTime scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
+
+    public boolean isRecurring() {
+        return recurring;
+    }
+
+    public void setRecurring(boolean recurring) {
+        this.recurring = recurring;
+    }
+
+    public String getRecurrenceRule() {
+        return recurrenceRule;
+    }
+
+    public void setRecurrenceRule(String recurrenceRule) {
+        this.recurrenceRule = recurrenceRule;
+    }
+
+    public User getAssignedUser() {
+        return assignedUser;
+    }
+
+    public void setAssignedUser(User assignedUser) {
+        this.assignedUser = assignedUser;
+    }
+
+    public Household getHousehold() {
+        return household;
+    }
+
+    public void setHousehold(Household household) {
+        this.household = household;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 }
