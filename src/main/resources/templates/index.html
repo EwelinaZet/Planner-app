@@ -220,6 +220,7 @@
                 <div class="field">
                     <label for="description">Opis</label>
                     <input id="description" type="text" th:field="*{description}" placeholder="Krótki opis">
+                    <div class="error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
                 </div>
 
                 <div class="field">
@@ -235,22 +236,23 @@
                 <div>
                     <span class="task-title"
                           th:text="${taskItem.title}"
-                          th:classappend="${taskItem.completed} ? ' completed-text' : ''">
+                          th:classappend="${taskItem.status.name() == 'DONE'} ? ' completed-text' : ''">
                         Tytuł
                     </span>
 
-                    <span class="status status-open" th:if="${!taskItem.completed}">
+                    <span class="status status-open" th:if="${taskItem.status.name() != 'DONE'}"
+                          th:text="${taskItem.status.name() == 'IN_PROGRESS'} ? 'W trakcie' : 'Do zrobienia'">
                         Do zrobienia
                     </span>
 
-                    <span class="status status-done" th:if="${taskItem.completed}">
+                    <span class="status status-done" th:if="${taskItem.status.name() == 'DONE'}">
                         Gotowe
                     </span>
                 </div>
 
                 <div class="task-description"
                      th:text="${taskItem.description}"
-                     th:classappend="${taskItem.completed} ? ' completed-text' : ''">
+                     th:classappend="${taskItem.status.name() == 'DONE'} ? ' completed-text' : ''">
                     Opis
                 </div>
 

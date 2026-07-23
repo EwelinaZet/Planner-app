@@ -11,7 +11,7 @@ public class HouseholdMember extends BaseEntity {
     private Household household;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name="uder_id", nullable = false)
+    @JoinColumn(name="user_id", nullable = false)
     private User user;
 
     @Enumerated(EnumType.STRING)
