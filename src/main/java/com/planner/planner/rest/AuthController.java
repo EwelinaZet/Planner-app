@@ -1,4 +1,4 @@
-package com.planner.planner.config;
+package com.planner.planner.rest;
 
 import com.planner.planner.dao.RegisterRequest;
 import com.planner.planner.service.AuthService;
