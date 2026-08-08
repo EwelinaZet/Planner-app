@@ -33,7 +33,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void register(RegisterRequest request) {
+    public User register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Użytkownik o takim emailu już istnieje");
         }
@@ -55,5 +55,6 @@ public class AuthService {
         member.setHousehold(household);
         member.setRole(HouseholdRole.OWNER);
         householdMemberRepository.save(member);
+        return user;
     }
 }
