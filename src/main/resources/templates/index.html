@@ -18,6 +18,10 @@
             padding: 0 16px;
         }
 
+        .bottom-bar {
+            display: flex;
+            justify-content: end;
+        }
         .header {
             margin-bottom: 24px;
         }
@@ -91,6 +95,11 @@
             background: #fee2e2;
             color: #b91c1c;
             border: 1px solid #fecaca;
+        }
+
+        .btn-gray {
+            background: #8f9cb7;
+            color: white;
         }
 
         .task-list {
@@ -199,6 +208,9 @@
 </head>
 <body>
 <div class="page">
+    <form class="bottom-bar" th:action="@{/logout}" method="post">
+        <button class="btn btn-gray" type="submit">Wyloguj</button>
+    </form>
     <div class="header">
         <h1>Lista zadań</h1>
         <p>Dodawaj i zarządzaj zadaniami.</p>
