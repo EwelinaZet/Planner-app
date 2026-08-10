@@ -37,7 +37,7 @@ public class CustomUserDetailsServiceTest {
         user.setEnabled(true);
 
         // zwraca usera
-        when(userRepository.findByEmail(email))
+        when(userRepository.findByEmailAndDeletedFalse(email))
                 .thenReturn(Optional.of(user));
 
         // wykonanie
