@@ -2,9 +2,8 @@ package com.planner.planner.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "tasks")
@@ -21,11 +20,11 @@ public class Task extends BaseEntity {
     @Column(nullable = false, length = 30)
     private TaskStatus status = TaskStatus.TODO;
 
-    @Column(name = "due_date")
-    private LocalDateTime dueDate;
+    @Column(name = "start_date")
+    private Instant startDate;
 
-    @Column(name = "scheduled_at")
-    private LocalDateTime scheduledAt;
+    @Column(name = "end_date")
+    private Instant endDate;
 
     @Column(name = "is_recurring", nullable = false)
     private boolean recurring = false;
@@ -69,20 +68,20 @@ public class Task extends BaseEntity {
         this.status = status;
     }
 
-    public LocalDateTime getDueDate() {
-        return dueDate;
+    public Instant getStartDate() {
+        return startDate;
     }
 
-    public void setDueDate(LocalDateTime dueDate) {
-        this.dueDate = dueDate;
+    public void setStartDate(Instant startDate) {
+        this.startDate = startDate;
     }
 
-    public LocalDateTime getScheduledAt() {
-        return scheduledAt;
+    public Instant getEndDate() {
+        return endDate;
     }
 
-    public void setScheduledAt(LocalDateTime scheduledAt) {
-        this.scheduledAt = scheduledAt;
+    public void setEndDate(Instant endDate) {
+        this.endDate = endDate;
     }
 
     public boolean isRecurring() {
