@@ -31,7 +31,7 @@ public class TaskController {
 
     @PostMapping("/add")
     public String addTask(@Valid @ModelAttribute("task") Task task,
-                          BindingResult bindingResult,   RedirectAttributes redirectAttributes,
+                          BindingResult bindingResult, RedirectAttributes redirectAttributes,
                           Principal principal) {
         if (bindingResult.hasErrors()) {
 
@@ -41,7 +41,7 @@ public class TaskController {
             return "redirect:/";
         }
 
-        taskService.add(task.getTitle(), task.getDescription(), principal.getName());
+        taskService.add(task.getTitle(), task.getDescription(), principal.getName(), task.getStartDate(), task.getEndDate());
         return "redirect:/";
     }
 

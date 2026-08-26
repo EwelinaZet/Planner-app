@@ -2,6 +2,7 @@ package com.planner.planner.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 
@@ -20,10 +21,12 @@ public class Task extends BaseEntity {
     @Column(nullable = false, length = 30)
     private TaskStatus status = TaskStatus.TODO;
 
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = false)
+    @NotNull
     private Instant startDate;
 
-    @Column(name = "end_date")
+    @Column(name = "end_date", nullable = false)
+    @NotNull
     private Instant endDate;
 
     @Column(name = "is_recurring", nullable = false)
