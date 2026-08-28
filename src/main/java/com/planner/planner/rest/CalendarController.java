@@ -18,7 +18,6 @@ import java.time.Instant;
 import java.util.List;
 
 @Controller
-@RequestMapping("/api/calendar")
 public class CalendarController {
 
     private final CalendarService calendarService;
@@ -44,15 +43,6 @@ public class CalendarController {
         return calendarService.getEvents(userId, from, to);
     }
 
-//    private Long getUserId(Authentication authentication) {
-//        String email = authentication.getName();
-//
-//        return userRepository
-//                .findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("User not found"))
-//                .getId();
-//    }
-
     private Long getUserId(Authentication authentication) {
         String email = authentication.getName();
 
@@ -65,5 +55,10 @@ public class CalendarController {
         System.out.println("userId = " + user.getId());
 
         return user.getId();
+    }
+
+    @GetMapping("/calendar")
+    public String calendarPage() {
+        return "calendar";
     }
 }
