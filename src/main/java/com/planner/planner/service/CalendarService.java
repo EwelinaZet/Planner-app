@@ -1,8 +1,7 @@
 package com.planner.planner.service;
 
 import com.planner.planner.dao.TaskRepository;
-import com.planner.planner.dao.UserRepository;
-import com.planner.planner.entity.CalendarEvent;
+import com.planner.planner.dto.CalendarEvent;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

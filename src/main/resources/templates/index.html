@@ -339,6 +339,20 @@
                 </div>
 
                 <div class="field">
+                    <label for="assignUser">
+                        Data zakończenia
+                    </label>
+
+                    <div class="member-select-wrapper">
+                        <label for="assignUser">Wybierz członka:</label>
+
+                        <select id="assignUser" name="assignUser">
+                            <option value="">-- Wybierz członka --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
                     <button class="btn btn-primary" type="submit">
                         Dodaj
                     </button>
@@ -390,6 +404,12 @@
                     <div>
                         ID:
                         <span th:text="${taskItem.id}">
+                            1
+                        </span>
+                    </div>
+                    <div>
+                        Osoba:
+                        <span th:text="${taskItem.createdBy}">
                             1
                         </span>
                     </div>
@@ -450,7 +470,7 @@
 
 </div>
 
-<script>
+<script th:inline="javascript">
     const taskForm = document.getElementById('taskForm');
 
     const startDateInput = document.getElementById('startDateInput');
@@ -458,6 +478,8 @@
 
     const startDate = document.getElementById('startDate');
     const endDate = document.getElementById('endDate');
+
+    const assignUser = document.getElementById('assignUser');
 
     function convertToInstant(value) {
         if (!value) {
@@ -467,11 +489,61 @@
         return new Date(value).toISOString();
     }
 
-    taskForm.addEventListener('submit', function () {
-        startDate.value = convertToInstant(startDateInput.value);
-        endDate.value = convertToInstant(endDateInput.value);
-    });
-</script>
+    const apiUrl = /*[[@{/hausehold-members}]]*/
 
+    async function loadMembers() {
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const text = await response.text().catch(() => '');
+
+                throw new Error(
+                    `Błąd serwera: ${response.status} ${response.statusText}` +
+                    `${text ? ' – ' + text : ''}`
+                );
+            }
+
+            const members = await response.json();
+            console.log('members:', members);
+
+            assignUser.innerHTML = `
+                <option value="">-- Wybierz członka --</option>
+            `;
+
+            members.forEach(member => {
+            console.log('member:', member);
+                const option = document.createElement('option');
+
+                option.value = member.id;
+
+                option.textContent = member.user.firstName;
+
+                assignUser.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Nie udało się pobrać listy members:', error);
+
+            assignUser.innerHTML = `
+                <option value="">Nie udało się pobrać członków</option>
+            `;
+        }
+    }
+
+    loadMembers();
+
+    if (taskForm) {
+        taskForm.addEventListener('submit', function () {
+            startDate.value = convertToInstant(startDateInput.value);
+            endDate.value = convertToInstant(endDateInput.value);
+        });
+    }
+</script>
 </body>
+
 </html>

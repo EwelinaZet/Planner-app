@@ -43,9 +43,14 @@ public class TaskService {
         taskRepository.save(task); // Bez tego (i bez @Transactional) zmiana statusu nie zostanie zapisana do bazy, bo sesja zamyka się po findById
     }
 
-    public void add(String title, String description, String userEmail, Instant startDate, Instant endDate) {
+    public void add(String title, String description, String userEmail, Instant startDate, Instant endDate, User assignUser) {
 
-
+        if(assignUser == null) {
+            System.out.println("assign null" + assignUser );
+            throw new IllegalArgumentException(
+                    "assign null" + assignUser + title
+            );
+        }
         System.out.println("startDate = " + startDate);
         System.out.println("endDate = " + endDate);
         System.out.println(
@@ -64,6 +69,20 @@ public class TaskService {
         HouseholdMember member = householdMemberRepository.findByUser(user)
                 .orElseThrow(() -> new IllegalStateException("Użytkownik nie należy do żadnego gospodarstwa"));
 
+//        HouseholdMember assign = householdMemberRepository.findByUser(assignUser)
+//                .orElseThrow(() -> new IllegalStateException("Użytkownik nie należy do żadnego gospodarstwa"));
+
+
+//        if(assignUser == null) {
+//            System.out.println("assign null" + assignUser );
+//            throw new IllegalArgumentException(
+//                    "assign null" + assignUser + title
+//            );
+//        }
+        User assign = userRepository.findByEmail(assignUser.getEmail())
+                .orElseThrow(() -> new IllegalStateException("Nie znaleziono użytkownika"));
+
+        System.out.println("assign" + assign);
         Task task = new Task();
         task.setTitle(title);
         task.setDescription(description);
@@ -71,6 +90,7 @@ public class TaskService {
         task.setEndDate(endDate);
         task.setHousehold(member.getHousehold());
         task.setCreatedBy(user);
+        task.setAssignedUser(assign);
         taskRepository.save(task);
     }
 

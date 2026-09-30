@@ -1,4 +1,6 @@
-package com.planner.planner.entity;
+package com.planner.planner.dto;
+
+import com.planner.planner.entity.TaskStatus;
 
 import java.time.Instant;
 

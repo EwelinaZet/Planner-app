@@ -41,4 +41,8 @@ public class HouseholdMember extends BaseEntity {
     public void setRole(HouseholdRole role) {
         this.role = role;
     }
+
+    public Long getHouseholdId() {
+        return household != null ? household.getId() : null;
+    }
 }
