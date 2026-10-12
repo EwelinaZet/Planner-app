@@ -59,7 +59,7 @@ public class TaskService {
         );
         if(!endDate.isAfter(startDate)) {
             throw new IllegalArgumentException(
-                    "End date must be after start date"
+                    "Data zakończenia musi być późniejsza niż data rozpoczęcia"
             );
         }
 
@@ -69,16 +69,6 @@ public class TaskService {
         HouseholdMember member = householdMemberRepository.findByUser(user)
                 .orElseThrow(() -> new IllegalStateException("Użytkownik nie należy do żadnego gospodarstwa"));
 
-//        HouseholdMember assign = householdMemberRepository.findByUser(assignUser)
-//                .orElseThrow(() -> new IllegalStateException("Użytkownik nie należy do żadnego gospodarstwa"));
-
-
-//        if(assignUser == null) {
-//            System.out.println("assign null" + assignUser );
-//            throw new IllegalArgumentException(
-//                    "assign null" + assignUser + title
-//            );
-//        }
         User assign = userRepository.findByEmail(assignUser.getEmail())
                 .orElseThrow(() -> new IllegalStateException("Nie znaleziono użytkownika"));
 

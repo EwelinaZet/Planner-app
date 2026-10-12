@@ -2,18 +2,18 @@ package com.planner.planner.rest;
 
 import com.planner.planner.dao.UserRepository;
 import com.planner.planner.dto.CalendarEvent;
-import com.planner.planner.entity.User;
 import com.planner.planner.service.CalendarService;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
 
-@Controller
+@RestController
+@RequestMapping("/api/calendar")
 public class CalendarController {
 
     private final CalendarService calendarService;
@@ -25,36 +25,11 @@ public class CalendarController {
     }
 
     @GetMapping("/events")
-    @ResponseBody
-    public List<CalendarEvent> getEvents(
-            @RequestParam
-            Instant from,
-
-            @RequestParam
-            Instant to,
-
-            Authentication authentication
-    ) {
-        Long userId = getUserId(authentication);
+    public List<CalendarEvent> getEvents(@RequestParam Instant from, @RequestParam Instant to,
+                                         Authentication authentication) {
+        Long userId = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found: " + authentication.getName()))
+                .getId();
         return calendarService.getEvents(userId, from, to);
-    }
-
-    private Long getUserId(Authentication authentication) {
-        String email = authentication.getName();
-
-        User user = userRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new RuntimeException("User not found: " + email));
-
-        System.out.println("email = " + email);
-        System.out.println("userId = " + user.getId());
-
-        return user.getId();
-    }
-
-    @GetMapping("/calendar")
-    public String calendarPage() {
-        return "calendar";
     }
 }

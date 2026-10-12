@@ -39,7 +39,7 @@ public class Task extends BaseEntity {
     @JoinColumn(name = "household_id", nullable = false)
     private Household household;
 
-    @ManyToOne(fetch= FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user_id")
     private User assignedUser;
 

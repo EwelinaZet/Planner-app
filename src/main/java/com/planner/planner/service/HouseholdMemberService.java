@@ -34,7 +34,9 @@ public class HouseholdMemberService {
                 .stream()
                 .map(member -> new HouseholdMemberResponse(
                         member.getId(),
-                        member.getUser(),
+                        member.getUser().getId(),
+                        member.getUser().getFirstName(),
+                        member.getUser().getLastName(),
                         member.getRole()
                 ))
                 .toList();

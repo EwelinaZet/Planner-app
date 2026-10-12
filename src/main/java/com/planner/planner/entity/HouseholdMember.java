@@ -1,5 +1,9 @@
 package com.planner.planner.entity;
 
+import com.planner.planner.entity.BaseEntity;
+import com.planner.planner.entity.Household;
+import com.planner.planner.entity.HouseholdRole;
+import com.planner.planner.entity.User;
 import jakarta.persistence.*;
 
 @Entity
