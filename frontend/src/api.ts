@@ -44,6 +44,19 @@ export interface RegisterData {
   householdName: string
 }
 
+export interface Invitation {
+  householdName: string
+  email: string
+  expiresAt: string
+}
+
+export interface InvitationPreview {
+  householdName: string
+  invitedByFirstName: string
+  email: string
+  expiresAt: string
+}
+
 /** Błąd API; `fields` zawiera komunikaty walidacji per pole, a `error` ogólny komunikat (HTTP 400). */
 export class ApiError extends Error {
   constructor(public status: number, public fields: Record<string, string> = {}) {
@@ -77,6 +90,7 @@ export const api = {
     request('POST', '/api/auth/login', new URLSearchParams({ username: email, password })),
   logout: () => request('POST', '/api/auth/logout'),
   register: (data: RegisterData) => request('POST', '/api/auth/register', jsonBody(data), true),
+  registerInvitation: (data: RegisterData) => request('POST', '/api/auth/register-invitation', jsonBody(data), true),
 
   tasks: () => request<Task[]>('GET', '/api/tasks'),
   addTask: (task: NewTask) => request('POST', '/api/tasks', jsonBody(task), true),
@@ -89,4 +103,7 @@ export const api = {
       'GET',
       `/api/calendar/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
     ),
+  invitation: (code) => request<Invitation>('GET', `/api/invitations/${code}`),
+  sendInvitation: (email: string) =>
+    request<Invitation>('POST', '/api/household-invitation', jsonBody({ email }), true),
 }

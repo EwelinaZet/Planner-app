@@ -57,4 +57,33 @@ public class AuthService {
         householdMemberRepository.save(member);
         return user;
     }
+
+    @Transactional
+    public User registerInvitation(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Użytkownik o takim emailu już istnieje");
+        }
+
+        User user = new User();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEnabled(true);
+        userRepository.save(user);
+
+
+        Household household = householdRepository.findByName(request.getHouseholdName());
+//                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika"));
+
+//        household.setName(request.getHouseholdName());
+//        householdRepository.save(household);
+
+        HouseholdMember member = new HouseholdMember();
+        member.setUser(user);
+        member.setHousehold(household);
+        member.setRole(HouseholdRole.MEMBER);
+        householdMemberRepository.save(member);
+        return user;
+    }
 }

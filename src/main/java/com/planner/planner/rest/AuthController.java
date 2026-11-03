@@ -29,4 +29,10 @@ public class AuthController {
     public void register(@Valid @RequestBody RegisterRequest registerRequest) {
         authService.register(registerRequest);
     }
+
+    @PostMapping("/register-invitation")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void registerInvitation(@Valid @RequestBody RegisterRequest registerRequest) {
+        authService.registerInvitation(registerRequest);
+    }
 }

@@ -8,7 +8,7 @@ const STATUS_LABEL = { TODO: 'Do zrobienia', IN_PROGRESS: 'W trakcie', DONE: 'Go
 const toInstant = (value: FormDataEntryValue | null) => (value ? new Date(String(value)).toISOString() : '')
 const fmt = (iso: string) => new Date(iso).toLocaleString('pl-PL')
 
-export function TaskList({ onCalendar, onLogout }: { onCalendar: () => void; onLogout: () => void }) {
+export function TaskList({ onCalendar, onLogout, onInvitation, onInvite }: { onCalendar: () => void; onLogout: () => void; onInvitation: () => void; onInvite: () => void; }) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -47,6 +47,8 @@ export function TaskList({ onCalendar, onLogout }: { onCalendar: () => void; onL
           <h1>Lista zadań</h1>
           <p>Dodawaj i zarządzaj zadaniami.</p>
           <button className="link" onClick={onCalendar}>Kalendarz →</button>
+          <button className="link" onClick={onInvitation}>Zaproszenia →</button>
+          <button className="link" onClick={onInvite}>Zaproś uytkownika →</button>
         </div>
         <button className="btn btn-danger" onClick={onLogout}>Wyloguj</button>
       </div>

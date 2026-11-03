@@ -73,8 +73,4 @@ public class User extends BaseEntity {
     public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
-
-    public void setId(Long userId) {
-
-    }
 }

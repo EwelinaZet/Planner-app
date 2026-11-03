@@ -45,7 +45,7 @@ public class TaskService {
 
     public void add(String title, String description, String userEmail, Instant startDate, Instant endDate, User assignUser) {
 
-        if(assignUser == null) {
+        if (assignUser == null) {
             System.out.println("assign null" + assignUser );
             throw new IllegalArgumentException(
                     "assign null" + assignUser + title
