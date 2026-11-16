@@ -1,6 +1,7 @@
 package com.planner.planner.rest;
 
-import com.planner.planner.dao.RegisterRequest;
+import com.planner.planner.dto.InvitationRegisterRequest;
+import com.planner.planner.dto.RegisterRequest;
 import com.planner.planner.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ public class AuthController {
 
     @PostMapping("/register-invitation")
     @ResponseStatus(HttpStatus.CREATED)
-    public void registerInvitation(@Valid @RequestBody RegisterRequest registerRequest) {
-        authService.registerInvitation(registerRequest);
+    public void registerInvitation(@Valid @RequestBody InvitationRegisterRequest invitationRegisterRequest) {
+        authService.registerInvitation(invitationRegisterRequest);
     }
 }

@@ -8,22 +8,22 @@ import { TaskList } from './TaskList'
 
 type View = 'loading' | 'login' | 'register' | 'tasks' | 'calendar' | 'invitation' | 'invite'
 
-const inviteCode = window.location.pathname.match(/^\/invite\/([^/]+)/)?.[1] ?? null 
+const invitationCode = window.location.pathname.match(/^\/invite\/([^/]+)/)?.[1] ?? null 
 
 export default function App() {
   const [view, setView] = useState<View>('loading')
 
   useEffect(() => {
-    api.me().then(() => setView('tasks')).catch(() => setView(inviteCode ? 'register' : 'login'))
+    api.me().then(() => setView('tasks')).catch(() => setView(invitationCode ? 'register' : 'login'))
   }, [])
 
   if (view === 'loading') return null
   const toLogin = () => {
-    if (inviteCode) window.history.replaceState(null, '', '/')
+    if (invitationCode) window.history.replaceState(null, '', '/')
     setView('login')
   }
   if (view === 'login') return <Login onSuccess={() => setView('tasks')} onRegister={() => setView('register')} />
-  if (view === 'register') return <Register inviteCode={inviteCode} onDone={toLogin} onLogin={toLogin} />
+  if (view === 'register') return <Register invitationCode={invitationCode} onDone={toLogin} onLogin={toLogin} />
 
   const logout = () => api.logout().finally(() => setView('login'))
   return view === 'calendar'

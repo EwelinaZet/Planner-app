@@ -38,38 +38,35 @@ const FIELDS: [keyof RegisterData, string, string][] = [
   ['householdName', 'Nazwa gospodarstwa', 'text'],
 ]
 
-export function Register({ inviteCode, onDone, onLogin }: { inviteCode: string | null; onDone: () => void; onLogin: () => void }) {
+export function Register({ invitationCode, onDone, onLogin }: { invitationCode: string | null; onDone: () => void; onLogin: () => void }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [invitationPreview, setInvitationPreview] = useState<InvitationPreview | null>(null)
   
-  // const visibleFields = inviteCode ? FIELDS.filter(([name]) => name !== 'householdName') : FIELDS
   const visibleFields = FIELDS
 
   useEffect(()=> {
     const fetchData = async () => {
       try {
-        setInvitationPreview(await api.invitation(inviteCode))
+        setInvitationPreview(await api.invitation(invitationCode))
         setErrors({})
       } catch (err) {
         setInvitationPreview(null)
         setErrors(err instanceof ApiError ? err.fields : {})
       }
     }
-    if(inviteCode) {
+    if(invitationCode) {
       fetchData()
     }
   })
 
   async function submit(e: FormEvent<HTMLFormElement>) {
-    console.log('test')
     e.preventDefault()
     const form = new FormData(e.currentTarget)
     const data = Object.fromEntries(visibleFields.map(([name]) => [name, String(form.get(name))])) as unknown as RegisterData
-    console.log('data', data)
-    if (inviteCode) data.inviteCode = inviteCode
+
+    if (invitationCode) data.invitationCode = invitationCode
     try {
-      if(inviteCode) {
-        console.log('registerInvitation', data)
+      if(invitationCode) {
         await api.registerInvitation(data)
       } else {
         await api.register(data)

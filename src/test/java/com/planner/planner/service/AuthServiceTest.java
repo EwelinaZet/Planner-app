@@ -2,11 +2,9 @@ package com.planner.planner.service;
 
 import com.planner.planner.dao.HouseholdMemberRepository;
 import com.planner.planner.dao.HouseholdRepository;
-import com.planner.planner.dao.RegisterRequest;
+import com.planner.planner.dto.RegisterRequest;
 import com.planner.planner.dao.UserRepository;
 import com.planner.planner.entity.Household;
-import com.planner.planner.entity.HouseholdMember;
-import com.planner.planner.entity.HouseholdRole;
 import com.planner.planner.entity.User;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;

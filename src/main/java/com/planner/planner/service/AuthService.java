@@ -1,39 +1,44 @@
 package com.planner.planner.service;
 
-import com.planner.planner.dao.HouseholdMemberRepository;
-import com.planner.planner.dao.HouseholdRepository;
-import com.planner.planner.dao.RegisterRequest;
-import com.planner.planner.dao.UserRepository;
-import com.planner.planner.entity.Household;
-import com.planner.planner.entity.HouseholdMember;
-import com.planner.planner.entity.HouseholdRole;
-import com.planner.planner.entity.User;
+import com.planner.planner.dao.*;
+import com.planner.planner.dto.InvitationRegisterRequest;
+import com.planner.planner.dto.RegisterRequest;
+import com.planner.planner.entity.*;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class AuthService {
 
     private final UserRepository userRepository;
     private final HouseholdRepository householdRepository;
+    private final HouseholdInvitationRepository householdInvitationRepository;
     private final HouseholdMemberRepository householdMemberRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AuthService(
             UserRepository userRepository,
-            HouseholdRepository householdRepository,
+            HouseholdRepository householdRepository, HouseholdInvitationRepository householdInvitationRepository,
             HouseholdMemberRepository householdMemberRepository,
             PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.householdRepository = householdRepository;
+        this.householdInvitationRepository = householdInvitationRepository;
         this.householdMemberRepository = householdMemberRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public User register(RegisterRequest request) {
+        if (request.getHouseholdName() == null || request.getHouseholdName().isBlank()) {
+            throw new IllegalArgumentException("Nazwa gospodarstwa już istnieje");
+        }
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Użytkownik o takim emailu już istnieje");
         }
@@ -59,7 +64,19 @@ public class AuthService {
     }
 
     @Transactional
-    public User registerInvitation(RegisterRequest request) {
+    public User registerInvitation(@Valid InvitationRegisterRequest request) {
+        HouseholdInvitation invitation = householdInvitationRepository
+                .findByInvitationCode(request.getInvitationCode())
+                .orElseThrow(() -> new IllegalArgumentException("Nieprawidłowy kod zaproszenia" + request.getInvitationCode() ));
+
+        if (invitation.getStatus() != InvitationStatus.PENDING) {
+            throw new IllegalArgumentException("Zaproszenie zostało już wykożystane lub anulowane");
+        }
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Zaproszenie wygasło");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Użytkownik o takim emailu już istnieje");
         }
@@ -72,18 +89,17 @@ public class AuthService {
         user.setEnabled(true);
         userRepository.save(user);
 
-
-        Household household = householdRepository.findByName(request.getHouseholdName());
-//                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono użytkownika"));
-
-//        household.setName(request.getHouseholdName());
-//        householdRepository.save(household);
+        Household household = invitation.getHousehold();
 
         HouseholdMember member = new HouseholdMember();
         member.setUser(user);
         member.setHousehold(household);
         member.setRole(HouseholdRole.MEMBER);
         householdMemberRepository.save(member);
+
+        invitation.setStatus(InvitationStatus.ACCEPTED);
+        householdInvitationRepository.save(invitation);
+
         return user;
     }
 }
