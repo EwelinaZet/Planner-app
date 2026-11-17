@@ -7,6 +7,7 @@ import com.planner.planner.entity.User;
 import com.planner.planner.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -24,8 +25,8 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> list() {
-        return taskService.findAll().stream().map(TaskResponse::from).toList();
+    public List<TaskResponse> list(Principal principal) {
+        return  taskService.findAllAssignedTo(principal.getName()).stream().map(TaskResponse::from).toList();
     }
 
     @PostMapping

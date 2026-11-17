@@ -3,14 +3,20 @@ package com.planner.planner.service;
 import com.planner.planner.dao.HouseholdMemberRepository;
 import com.planner.planner.dao.TaskRepository;
 import com.planner.planner.dao.UserRepository;
+import com.planner.planner.dto.HouseholdMemberResponse;
+import com.planner.planner.dto.TaskResponse;
 import com.planner.planner.entity.HouseholdMember;
 import com.planner.planner.entity.Task;
 import com.planner.planner.entity.TaskStatus;
 import com.planner.planner.entity.User;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class TaskService {
@@ -30,6 +36,11 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
+    public List<Task> findAllAssignedTo(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalStateException("Nie znaleziono użytkownika"));
+        return taskRepository.findAllByAssignedUser_Id(user.getId());
+    }
 
     public void toggle(Long id) {
         Task task = taskRepository.findById(id).orElseThrow(() -> new IllegalStateException("Nie znaleziono zadania"));

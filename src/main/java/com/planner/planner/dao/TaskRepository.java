@@ -12,4 +12,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             Instant to,
             Instant from
     );
+
+    List<Task> findAllByAssignedUser_Id(
+            Long userId
+    );
 }
