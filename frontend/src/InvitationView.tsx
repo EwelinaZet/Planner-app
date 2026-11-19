@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
-import { api, type HouseholdInvitation } from './api'
+import { api, type Invitation } from './api'
 
 const fmt = (iso: string) => new Date(iso).toLocaleString('pl-PL')
 
-function statusLabel(inv: HouseholdInvitation) {
+function statusLabel(inv: Invitation) {
   if (inv.status === 'ACCEPTED') return { text: 'Zaakceptowane', className: 'status status-done' }
   if (new Date(inv.expiresAt) < new Date()) return { text: 'Wygasło', className: 'status status-expired' }
   return { text: 'Oczekujące', className: 'status status-open' }
 }
 
 export function InvitationView({ onTasks, onLogout }: { onTasks: () => void; onLogout: () => void }) {
-  const [invitations, setInvitations] = useState<HouseholdInvitation[] | null>(null)
+  const [invitations, setInvitations] = useState<Invitation[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {

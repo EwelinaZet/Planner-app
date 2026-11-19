@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { api, ApiError } from './api'
-import type { RegisterData, InvitationPreview } from './api '
+import type { RegisterData, InvitationPreview } from './api'
 
 export function Login({ onSuccess, onRegister }: { onSuccess: () => void; onRegister: () => void }) {
   const [error, setError] = useState(false)
@@ -44,20 +44,24 @@ export function Register({ invitationCode, onDone, onLogin }: { invitationCode: 
   
   const visibleFields = FIELDS
 
-  useEffect(()=> {
-    const fetchData = async () => {
-      try {
-        setInvitationPreview(await api.invitation(invitationCode))
+  useEffect(() => {
+    if (!invitationCode) return
+    let cancelled = false
+
+    api.invitation(invitationCode)
+      .then(preview => {
+        if (cancelled) return
+        setInvitationPreview(preview)
         setErrors({})
-      } catch (err) {
+      })
+      .catch(err => {
+        if (cancelled) return
         setInvitationPreview(null)
         setErrors(err instanceof ApiError ? err.fields : {})
-      }
-    }
-    if(invitationCode) {
-      fetchData()
-    }
-  })
+      })
+
+    return () => { cancelled = true }
+  }, [invitationCode])
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -84,8 +88,7 @@ export function Register({ invitationCode, onDone, onLogin }: { invitationCode: 
       {invitationPreview && (
         <div>Zaproszenie do gospodarstwa {invitationPreview.householdName} od {invitationPreview.invitedByFirstName}</div>
       )}
-      { visibleFields["email"]}
-      <form className="card stack" onSubmit={submit}>
+      <form className="card stack" onSubmit={submit} key={invitationPreview ? 'invitation' : 'empty'}>
         {visibleFields.map(([name, label, type]) => (
           <div className="field" key={name}>
             <label>{label}</label>
