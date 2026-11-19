@@ -6,6 +6,7 @@ import com.planner.planner.dao.UserRepository;
 import com.planner.planner.dto.InvitationPreviewResponse;
 import com.planner.planner.dto.InvitationResponse;
 import com.planner.planner.entity.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +53,8 @@ public class HouseholdInvitationService {
     }
 
     @Transactional
-    public InvitationResponse create(String ownerEmail, String invitedEmial) {
-        System.out.println("Wiadomość w konsoli: Serwis został uruchomiony.");
-        String email = invitedEmial.trim().toLowerCase();
+    public InvitationResponse create(String ownerEmail, String invitedEmail) {
+        String email = invitedEmail.trim().toLowerCase();
 
         User owner = userRepository.findByEmail(ownerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("nie znaleziono uzytkownika"));
@@ -61,21 +62,18 @@ public class HouseholdInvitationService {
         HouseholdMember ownerMember = householdMemberRepository.findByUser(owner)
                 .orElseThrow(() -> new IllegalArgumentException("nie nalezysz do gospodarstwa"));
 
-        if(ownerMember.getRole() != HouseholdRole.OWNER) {
-            throw new IllegalArgumentException("tylko właściciel gospodarstwa może zapraszać\"");
+        if (ownerMember.getRole() != HouseholdRole.OWNER) {
+            throw new IllegalArgumentException("tylko właściciel gospodarstwa może zapraszać");
         }
 
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("ta osoba ma już konto");
         }
-        System.out.println("Wiadomość w konsoli: Serwis został uruchomiony.");
-        if(householdInvitationRepository.existsByHouseholdIdAndEmailAndStatusAndExpiresAtAfter(
-                ownerMember.getHouseholdId(), email, InvitationStatus.PENDING, LocalDateTime.now()
-        )){
+
+        if (householdInvitationRepository.existsByHouseholdIdAndEmailAndStatusAndExpiresAtAfter(
+                ownerMember.getHouseholdId(), email, InvitationStatus.PENDING, LocalDateTime.now())) {
             throw new IllegalArgumentException("ta osoba ma już aktywne zaproszenie");
         }
-
-
 
         HouseholdInvitation invitation = new HouseholdInvitation();
         invitation.setHousehold(ownerMember.getHousehold());
@@ -85,10 +83,7 @@ public class HouseholdInvitationService {
         invitation.setExpiresAt(LocalDateTime.now().plusDays(EXPIRATION_DAYS));
         invitation.setStatus(InvitationStatus.PENDING);
 
-        householdInvitationRepository.saveAndFlush(invitation);
-
-        String link = "http://localhost:5173/invite/" + invitation.getInvitationCode();
-        return new InvitationResponse(email, link, invitation.getExpiresAt());
+        return InvitationResponse.from(householdInvitationRepository.saveAndFlush(invitation));
     }
 
     private String generateCode() {
@@ -129,4 +124,20 @@ public class HouseholdInvitationService {
         householdMemberRepository.save(member);
         invitation.setStatus(InvitationStatus.ACCEPTED);
     }
+
+    @Transactional(readOnly = true)
+    public List<InvitationResponse> findAllForUserHousehold(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
+
+        HouseholdMember member = householdMemberRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalArgumentException("nie nalezysz do gospodarstwa"));
+        return householdInvitationRepository
+                .findAllByHouseholdIdOrderByExpiresAtDesc(member.getHouseholdId())
+                .stream()
+                .map(InvitationResponse::from)
+                .toList();
+    }
+
 }

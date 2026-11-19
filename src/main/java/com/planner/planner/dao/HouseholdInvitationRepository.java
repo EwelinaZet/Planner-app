@@ -5,6 +5,7 @@ import com.planner.planner.entity.InvitationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface HouseholdInvitationRepository extends JpaRepository<HouseholdInvitation, Long> {
@@ -13,4 +14,9 @@ public interface HouseholdInvitationRepository extends JpaRepository<HouseholdIn
 
     boolean existsByHouseholdIdAndEmailAndStatusAndExpiresAtAfter(
             Long householdId, String email, InvitationStatus status, LocalDateTime now);
+
+    List<HouseholdInvitation> findAllByHouseholdId(Long householdId);
+
+    List<HouseholdInvitation> findAllByHouseholdIdOrderByExpiresAtDesc(Long householdId);
+
 }

@@ -23,14 +23,18 @@ export default function App() {
     setView('login')
   }
   if (view === 'login') return <Login onSuccess={() => setView('tasks')} onRegister={() => setView('register')} />
-  if (view === 'register') return <Register invitationCode={invitationCode} onDone={toLogin} onLogin={toLogin} />
+  const toTasks = () => {
+    if (invitationCode) window.history.replaceState(null, '', '/')
+      setView('tasks')
+  }
+  if (view === 'register') return <Register invitationCode={invitationCode} onDone={toTasks} onLogin={toLogin} />
 
   const logout = () => api.logout().finally(() => setView('login'))
   return view === 'calendar'
     ? <CalendarView onTasks={() => setView('tasks')} onLogout={logout} />
     : view === 'invitation'
-    ? <InvitationView onTasks={() => setView('invitation')} onLogout={logout} />
+    ? <InvitationView onTasks={() => setView('tasks')} onLogout={logout} />
     : view === 'invite'
-    ? <NewInvitation onTasks={() => setView('invite')} onLogout={logout} />
+    ? <NewInvitation onTasks={() => setView('tasks')} onLogout={logout} />
     : <TaskList onCalendar={() => setView('calendar')} onInvitation={() => setView('invitation')} onInvite={() => setView('invite')}  onLogout={logout} />
 }

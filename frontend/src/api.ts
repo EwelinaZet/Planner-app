@@ -104,6 +104,7 @@ export const api = {
       `/api/calendar/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
     ),
   invitation: (code) => request<Invitation>('GET', `/api/invitations/${code}`),
+  invitations: () => request<Invitation[]>('GET', '/api/household-invitation'),
   sendInvitation: (email: string) =>
     request<Invitation>('POST', '/api/household-invitation', jsonBody({ email }), true),
 }

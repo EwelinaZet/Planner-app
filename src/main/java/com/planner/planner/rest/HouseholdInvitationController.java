@@ -1,6 +1,7 @@
 package com.planner.planner.rest;
 
 import com.planner.planner.dao.HouseholdInvitationRepository;
+import com.planner.planner.dao.UserRepository;
 import com.planner.planner.dto.CreateInvitationRequest;
 import com.planner.planner.dto.InvitationPreviewResponse;
 import com.planner.planner.dto.InvitationResponse;
@@ -15,16 +16,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
 public class HouseholdInvitationController {
     private final HouseholdInvitationService householdInvitationService;
     private final HouseholdInvitationRepository householdInvitationRepository;
+    private final UserRepository userRepository;
 
-    public HouseholdInvitationController(HouseholdInvitationService householdInvitationService, HouseholdInvitationRepository householdInvitationRepository) {
+    public HouseholdInvitationController(HouseholdInvitationService householdInvitationService, HouseholdInvitationRepository householdInvitationRepository, UserRepository userRepository) {
         this.householdInvitationService = householdInvitationService;
         this.householdInvitationRepository = householdInvitationRepository;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/api/household-invitation")
@@ -38,14 +42,16 @@ public class HouseholdInvitationController {
        return householdInvitationService.getPreview(code);
     }
 
-//    @PostMapping("/api/register-invitation")
-//    @ResponseStatus(HttpStatus.CREATED)
-//    public InvitationResponse registerInvitation(@Valid @RequestBody CreateInvitationRequest request, Authentication authentication) {
-//        return householdInvitationService.joinHousehold(authentication.getName());
-//    }
-
     @PostMapping("/{code}/accept")
     public boolean acceptInvitation(Long householdId, String email, InvitationStatus status, LocalDateTime now) {
         return householdInvitationRepository.existsByHouseholdIdAndEmailAndStatusAndExpiresAtAfter(householdId, email, status, now);
+    }
+
+    @GetMapping("/api/household-invitation")
+    public List<InvitationResponse> list(Authentication authentication) {
+        Long userId = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found: " + authentication.getName()))
+                .getId();
+        return householdInvitationService.findAllForUserHousehold(userId);
     }
 }

@@ -71,6 +71,7 @@ export function Register({ invitationCode, onDone, onLogin }: { invitationCode: 
       } else {
         await api.register(data)
       }
+      await api.login(data.email, data.password)
       onDone()
     } catch (err) {
       setErrors(err instanceof ApiError ? err.fields : {})
