@@ -1,40 +1,29 @@
-import { useEffect, useState } from 'react'
-import { api } from './api'
-import { Login, Register } from './Auth'
+import { Navigate, Route, Routes } from 'react-router'
+import { InvitationRegister, Login, Register } from './Auth'
 import { CalendarView } from './CalendarView'
 import { InvitationView } from './InvitationView'
 import { NewInvitation } from './NewInvitation'
+import { GuestOnly, RequireAuth } from './session'
 import { TaskList } from './TaskList'
 
-type View = 'loading' | 'login' | 'register' | 'tasks' | 'calendar' | 'invitation' | 'invite'
-
-const invitationCode = window.location.pathname.match(/^\/invite\/([^/]+)/)?.[1] ?? null 
-
 export default function App() {
-  const [view, setView] = useState<View>('loading')
+  return (
+    <Routes>
+      <Route element={<GuestOnly />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        {/* Link z zaproszenia generowany przez backend (InvitationResponse). */}
+        <Route path="/invite/:code" element={<InvitationRegister />} />
+      </Route>
 
-  useEffect(() => {
-    api.me().then(() => setView('tasks')).catch(() => setView(invitationCode ? 'register' : 'login'))
-  }, [])
+      <Route element={<RequireAuth />}>
+        <Route path="/tasks" element={<TaskList />} />
+        <Route path="/calendar" element={<CalendarView />} />
+        <Route path="/invitations" element={<InvitationView />} />
+        <Route path="/invitations/new" element={<NewInvitation />} />
+      </Route>
 
-  if (view === 'loading') return null
-  const toLogin = () => {
-    if (invitationCode) window.history.replaceState(null, '', '/')
-    setView('login')
-  }
-  if (view === 'login') return <Login onSuccess={() => setView('tasks')} onRegister={() => setView('register')} />
-  const toTasks = () => {
-    if (invitationCode) window.history.replaceState(null, '', '/')
-      setView('tasks')
-  }
-  if (view === 'register') return <Register invitationCode={invitationCode} onDone={toTasks} onLogin={toLogin} />
-
-  const logout = () => api.logout().finally(() => setView('login'))
-  return view === 'calendar'
-    ? <CalendarView onTasks={() => setView('tasks')} onLogout={logout} />
-    : view === 'invitation'
-    ? <InvitationView onTasks={() => setView('tasks')} onLogout={logout} />
-    : view === 'invite'
-    ? <NewInvitation onTasks={() => setView('tasks')} onLogout={logout} />
-    : <TaskList onCalendar={() => setView('calendar')} onInvitation={() => setView('invitation')} onInvite={() => setView('invite')}  onLogout={logout} />
+      <Route path="*" element={<Navigate to="/tasks" replace />} />
+    </Routes>
+  )
 }

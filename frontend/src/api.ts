@@ -17,7 +17,7 @@ export interface Member {
   userId: number
   firstName: string
   lastName: string
-  role: string
+  role: 'OWNER' | 'MEMBER'
 }
 
 export interface CalendarEvent {
@@ -42,14 +42,19 @@ export interface RegisterData {
   email: string
   password: string
   householdName: string
+  invitationCode?: string
 }
 
-export interface Invitation {
-  householdName: string
+/** Odpowiada InvitationResponse z backendu. */
+export interface HouseholdInvitation {
+  id: number
   email: string
+  status: 'PENDING' | 'ACCEPTED'
+  link: string
   expiresAt: string
 }
 
+/** Odpowiada InvitationPreviewResponse z backendu. */
 export interface InvitationPreview {
   householdName: string
   invitedByFirstName: string
@@ -57,11 +62,31 @@ export interface InvitationPreview {
   expiresAt: string
 }
 
-/** Błąd API; `fields` zawiera komunikaty walidacji per pole, a `error` ogólny komunikat (HTTP 400). */
+/**
+ * Błąd API; `fields` zawiera komunikaty walidacji per pole, a `error` ogólny komunikat.
+ * Dla błędów innych niż 400 `fields.error` dostaje komunikat zastępczy, żeby UI zawsze miało co pokazać.
+ */
 export class ApiError extends Error {
-  constructor(public status: number, public fields: Record<string, string> = {}) {
+  status: number
+  fields: Record<string, string>
+
+  constructor(status: number, fields: Record<string, string> = {}) {
     super(`HTTP ${status}`)
+    this.status = status
+    this.fields = fields
   }
+}
+
+const FALLBACK_MESSAGES: Record<number, string> = {
+  401: 'Sesja wygasła. Zaloguj się ponownie.',
+  403: 'Brak uprawnień do tej operacji.',
+  404: 'Nie znaleziono zasobu.',
+}
+
+/** Wywoływane, gdy serwer zwróci 401 (np. wygasła sesja) — App przełącza wtedy na ekran logowania. */
+let unauthorizedHandler: (() => void) | null = null
+export function onUnauthorized(handler: (() => void) | null) {
+  unauthorizedHandler = handler
 }
 
 function csrfToken(): string {
@@ -73,10 +98,21 @@ async function request<T = void>(method: string, url: string, body?: BodyInit, j
   const headers: Record<string, string> = { 'X-XSRF-TOKEN': csrfToken() }
   if (json) headers['Content-Type'] = 'application/json'
 
-  const res = await fetch(url, { method, headers, body, credentials: 'same-origin' })
+  let res: Response
+  try {
+    res = await fetch(url, { method, headers, body, credentials: 'same-origin' })
+  } catch {
+    throw new ApiError(0, { error: 'Brak połączenia z serwerem.' })
+  }
+
   if (!res.ok) {
-    const fields = res.status === 400 ? await res.json().catch(() => ({})) : {}
-    throw new ApiError(res.status, fields)
+    if (res.status === 400) {
+      throw new ApiError(400, await res.json().catch(() => ({ error: 'Nieprawidłowe dane.' })))
+    }
+    if (res.status === 401 && unauthorizedHandler) unauthorizedHandler()
+    throw new ApiError(res.status, {
+      error: FALLBACK_MESSAGES[res.status] ?? 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie.',
+    })
   }
   const text = await res.text()
   return (text ? JSON.parse(text) : undefined) as T
@@ -84,13 +120,19 @@ async function request<T = void>(method: string, url: string, body?: BodyInit, j
 
 const jsonBody = (data: unknown) => JSON.stringify(data)
 
+/** Wyciąga komunikaty błędów z dowolnego wyjątku, żeby komponenty nie musiały tego powtarzać. */
+export function errorFields(err: unknown): Record<string, string> {
+  return err instanceof ApiError ? err.fields : { error: 'Wystąpił nieoczekiwany błąd.' }
+}
+
 export const api = {
   me: () => request<{ email: string }>('GET', '/api/auth/me'),
   login: (email: string, password: string) =>
     request('POST', '/api/auth/login', new URLSearchParams({ username: email, password })),
   logout: () => request('POST', '/api/auth/logout'),
   register: (data: RegisterData) => request('POST', '/api/auth/register', jsonBody(data), true),
-  registerInvitation: (data: RegisterData) => request('POST', '/api/auth/register-invitation', jsonBody(data), true),
+  registerInvitation: (data: RegisterData) =>
+    request('POST', '/api/auth/register-invitation', jsonBody(data), true),
 
   tasks: () => request<Task[]>('GET', '/api/tasks'),
   addTask: (task: NewTask) => request('POST', '/api/tasks', jsonBody(task), true),
@@ -103,8 +145,10 @@ export const api = {
       'GET',
       `/api/calendar/events?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
     ),
-  invitation: (code: string) => request<InvitationPreview>('GET', `/api/invitations/${code}`),
-  invitations: () => request<Invitation[]>('GET', '/api/household-invitation'),
+
+  invitation: (code: string) =>
+    request<InvitationPreview>('GET', `/api/invitations/${encodeURIComponent(code)}`),
+  invitations: () => request<HouseholdInvitation[]>('GET', '/api/household-invitation'),
   sendInvitation: (email: string) =>
-    request<Invitation>('POST', '/api/household-invitation', jsonBody({ email }), true),
+    request<HouseholdInvitation>('POST', '/api/household-invitation', jsonBody({ email }), true),
 }
